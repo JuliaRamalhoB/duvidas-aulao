@@ -30,14 +30,27 @@ function formatDateTime(isoText) {
 // Põe texto num elemento e renderiza as fórmulas com KaTeX.
 // Primeiro o texto entra com textContent (seguro); só depois o KaTeX
 // procura $...$ e $$...$$ dentro desse texto.
+//
+// "R$" (dinheiro) NÃO é início de fórmula: cada "R$" vai para um
+// <span class="no-math"> que o KaTeX ignora. Como o span separa o texto,
+// o KaTeX também não junta o $ de "R$ 70" com o de "R$ 65".
 function setMathText(element, text) {
-  element.textContent = text;
+  element.textContent = "";
+  const parts = text.split("R$");
+  parts.forEach((part, index) => {
+    if (index > 0) {
+      element.append(makeEl("span", "no-math", "R$"));
+    }
+    element.append(document.createTextNode(part));
+  });
+
   if (typeof renderMathInElement === "function") {
     renderMathInElement(element, {
       delimiters: [
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false },
       ],
+      ignoredClasses: ["no-math"],
       throwOnError: false,
     });
   }
