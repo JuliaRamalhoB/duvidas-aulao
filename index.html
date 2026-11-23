@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dúvidas do Aulão</title>
+  <!--
+    Content-Security-Policy: segunda barreira contra XSS. O navegador só
+    aceita scripts deste site e do jsDelivr, e só fala com o nosso Supabase.
+    Se mudares de projeto Supabase, troca o endereço em connect-src.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' data:; connect-src https://ovuxdgyrikonddixvuvm.supabase.co wss://ovuxdgyrikonddixvuvm.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <!-- integrity = impressão digital do ficheiro: se o CDN o alterar, o navegador recusa-o -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+        integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Ecrã: a carregar -->
+  <main id="screen-loading" class="screen">
+    <p class="loading" role="status">Carregando…</p>
+  </main>
+
+  <!-- Ecrã: erro geral (ex.: config.js por preencher) -->
+  <main id="screen-error" class="screen" hidden>
+    <div class="card">
+      <h1>Algo deu errado</h1>
+      <p id="error-text" class="msg msg-error" role="alert"></p>
+      <button type="button" id="btn-reload" class="btn">Tentar de novo</button>
+    </div>
+  </main>
+
+  <!-- Ecrã: entrar / criar conta -->
+  <main id="screen-auth" class="screen" hidden>
+    <div class="card">
+      <h1>Dúvidas do Aulão</h1>
+      <p class="subtitle">Tire suas dúvidas sem vergonha: os colegas não veem quem perguntou.</p>
+
+      <div class="tabs" role="tablist">
+        <button type="button" id="tab-login" class="tab active" role="tab" aria-selected="true">Entrar</button>
+        <button type="button" id="tab-register" class="tab" role="tab" aria-selected="false">Criar conta</button>
+      </div>
+
+      <form id="form-login" novalidate>
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" autocomplete="email" required>
+
+        <label for="login-password">Senha</label>
+        <input id="login-password" type="password" autocomplete="current-password" required>
+
+        <button type="submit" class="btn">Entrar</button>
+      </form>
+
+      <form id="form-register" novalidate hidden>
+        <label for="register-name">Nome</label>
+        <input id="register-name" type="text" autocomplete="name" maxlength="80" required>
+        <p class="hint">A professora usa seu nome para aprovar a conta. Os colegas não veem.</p>
+
+        <label for="register-email">Email</label>
+        <input id="register-email" type="email" autocomplete="email" required>
+
+        <label for="register-password">Senha</label>
+        <input id="register-password" type="password" autocomplete="new-password" minlength="6" required>
+        <p class="hint">Mínimo de 6 caracteres.</p>
+
+        <button type="submit" class="btn">Criar conta</button>
+      </form>
+
+      <p id="auth-message" class="msg" role="alert" hidden></p>
+    </div>
+  </main>
+
+  <!-- Ecrã: conta à espera de aprovação -->
+  <main id="screen-pending" class="screen" hidden>
+    <div class="card">
+      <h1>Conta aguardando aprovação</h1>
+      <p>Olá, <strong id="pending-name"></strong>! Sua conta foi criada.</p>
+      <p>A professora precisa aprovar seu acesso. Assim que ela aprovar, toque em “Verificar de novo”.</p>
+      <p id="pending-message" class="msg" role="status" hidden></p>
+      <button type="button" id="btn-check-again" class="btn">Verificar de novo</button>
+      <button type="button" class="btn btn-secondary btn-logout">Sair</button>
+    </div>
+  </main>
+
+  <!-- Ecrã: aplicação (alunos aprovados e professora) -->
+  <div id="screen-app" class="screen" hidden>
+    <header class="app-header">
+      <span class="app-title">Dúvidas do Aulão</span>
+      <span class="user-area">
+        <span id="user-name" class="user-name"></span>
+        <button type="button" class="btn-link btn-logout">Sair</button>
+      </span>
+    </header>
+
+    <nav class="app-nav" aria-label="Seções">
+      <a href="#feed" data-section="feed">Dúvidas</a>
+      <a href="#mine" data-section="mine">Minhas dúvidas</a>
+      <a href="#practice" data-section="practice">Praticar</a>
+      <a href="#admin" data-section="admin" id="nav-admin" hidden>Painel</a>
+    </nav>
+
+    <main class="app-main">
+      <section id="section-feed" class="section" hidden>
+        <h2>Dúvidas</h2>
+
+        <!-- Enviar dúvida -->
+        <details class="box" id="new-doubt-box">
+          <summary>Enviar uma dúvida</summary>
+          <form id="form-new-doubt" novalidate>
+            <div id="new-doubt-theme"></div>
+
+            <label for="new-doubt-body">Sua dúvida</label>
+            <textarea id="new-doubt-body" rows="5" maxlength="1000"></textarea>
+            <p class="hint">
+              <span id="new-doubt-count">0</span>/1000 caracteres.
+              Fórmulas entre cifrões, ex.: $x^2 + 1$
+            </p>
+
+            <div id="new-doubt-preview-box" hidden>
+              <p class="hint">Pré-visualização:</p>
+              <div id="new-doubt-preview" class="preview math-text"></div>
+            </div>
+
+            <p class="hint">Seus colegas não veem quem enviou a dúvida.</p>
+            <button type="submit" class="btn">Enviar dúvida</button>
+            <p id="new-doubt-message" class="msg" role="status" hidden></p>
+          </form>
+        </details>
+
+        <!-- Filtros -->
+        <details class="box">
+          <summary>Filtros</summary>
+          <div id="filter-theme"></div>
+          <label for="filter-status">Situação</label>
+          <select id="filter-status">
+            <option value="all">Todas</option>
+            <option value="pending">Por responder</option>
+            <option value="answered">Respondidas</option>
+          </select>
+        </details>
+
+        <p id="feed-status" class="list-status" role="status"></p>
+        <div id="feed-list" class="doubt-list"></div>
+      </section>
+
+      <section id="section-mine" class="section" hidden>
+        <h2>Minhas dúvidas</h2>
+        <p class="hint">Só você vê esta lista.</p>
+        <p id="mine-status" class="list-status" role="status"></p>
+        <div id="mine-list" class="doubt-list"></div>
+      </section>
+
+      <section id="section-practice" class="section" hidden>
+        <h2>Praticar</h2>
+
+        <div class="panel">
+          <p class="hint">Escolha um tema e responda 3 questões. Depois de confirmar, você vê a resposta comentada.</p>
+          <div id="practice-theme"></div>
+          <button type="button" id="btn-practice-start" class="btn">Praticar este tema</button>
+          <p id="practice-message" class="msg msg-error" role="alert" hidden></p>
+        </div>
+
+        <p id="practice-summary" class="summary" role="status" hidden></p>
+        <p id="practice-status" class="list-status" role="status"></p>
+        <div id="practice-list" class="doubt-list"></div>
+
+        <button type="button" id="btn-practice-more" class="btn" hidden>Mais 3</button>
+
+        <div id="practice-redo" class="panel" hidden>
+          <p>Quer refazer as questões que já respondeu? Cada resposta conta como uma nova tentativa.</p>
+          <button type="button" id="btn-practice-redo" class="btn">Refazer questões</button>
+        </div>
+      </section>
+
+      <section id="section-admin" class="section" hidden>
+        <h2>Painel da professora</h2>
+
+        <!-- Aprovar alunos -->
+        <div class="panel">
+          <h3>Alunos aguardando aprovação</h3>
+          <p id="pending-status" class="list-status" role="status"></p>
+          <div id="pending-list" class="person-list"></div>
+          <div class="action-row">
+            <button type="button" id="btn-refresh-pending" class="btn-small">Atualizar lista</button>
+            <button type="button" id="btn-approve-all" class="btn-small btn-small-primary" hidden>Aprovar todos</button>
+          </div>
+          <p id="pending-admin-message" class="msg msg-error" role="alert" hidden></p>
+        </div>
+
+        <!-- Importar questões -->
+        <div class="panel">
+          <h3>Importar questões (CSV)</h3>
+          <p class="hint">
+            Colunas: discipline, topic, subtopic, statement, option_a, option_b,
+            option_c, option_d, option_e, correct, explanation.
+            Separador vírgula ou ponto e vírgula, arquivo em UTF-8.
+            Se houver qualquer erro, nada é importado.
+          </p>
+          <label for="csv-file">Arquivo CSV</label>
+          <input id="csv-file" type="file" accept=".csv,text/csv">
+          <div id="csv-result" role="status"></div>
+          <button type="button" id="btn-import" class="btn" hidden>Importar</button>
+          <p id="import-message" class="msg" role="alert" hidden></p>
+        </div>
+
+        <!-- Contagem por tema -->
+        <div class="panel">
+          <h3>Questões por tema</h3>
+          <p id="counts-status" class="list-status" role="status"></p>
+          <ul id="counts-list" class="counts-list"></ul>
+          <button type="button" id="btn-refresh-counts" class="btn-small">Atualizar contagem</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Bibliotecas (CDN, versão fixa) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"
+          integrity="sha384-GFr3yTh5lJznCbZfpTtXnwboFsxqtTQoeTZCRHhE0579KrRmlCzen5AA8ohaB5ug" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+          integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
+  <!-- Código da aplicação (app.js por último: é ele que arranca tudo) -->
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/themes.js"></script>
+  <script src="js/forum.js"></script>
+  <script src="js/csv.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/practice.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

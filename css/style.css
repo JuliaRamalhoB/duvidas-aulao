@@ -1,0 +1,681 @@
+/* Estilos base — pensado primeiro para celular, tema claro. */
+
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --text: #1c1e21;
+  --muted: #555b63;
+  --border: #c9ced6;
+  --primary: #1d4ed8;
+  --primary-dark: #1e3a8a;
+  --error-bg: #fdecec;
+  --error-text: #9b1c1c;
+  --ok-bg: #e8f5ec;
+  --ok-text: #1f6b35;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin: 0 0 1rem;
+}
+
+/* ----- Ecrãs ----- */
+
+.screen {
+  min-height: 100vh;
+}
+
+#screen-loading,
+#screen-error,
+#screen-auth,
+#screen-pending {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.loading {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.placeholder {
+  color: var(--muted);
+}
+
+/* ----- Formulários ----- */
+
+label {
+  display: block;
+  font-weight: 600;
+  margin: 14px 0 4px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  font: inherit;
+  font-size: 17px; /* >= 16px evita o zoom automático no iPhone */
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+}
+
+/* ----- Botões ----- */
+
+.btn {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 18px;
+  padding: 12px 16px;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--primary-dark);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.btn-secondary {
+  color: var(--primary);
+  background: #fff;
+  border: 2px solid var(--primary);
+  margin-top: 10px;
+}
+
+.btn-secondary:hover {
+  background: #eef2ff;
+}
+
+.btn-link {
+  min-height: 44px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--primary);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ----- Abas Entrar / Criar conta ----- */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 4px;
+}
+
+.tab {
+  flex: 1;
+  min-height: 48px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ----- Mensagens ----- */
+
+.msg {
+  margin: 16px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.msg-error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+/* ----- Aplicação ----- */
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-title {
+  font-weight: 700;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.user-name {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 50vw;
+}
+
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-nav a {
+  flex: 1 1 auto;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+}
+
+.app-nav a.active {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.app-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+/* ----- Fórum ----- */
+
+textarea {
+  resize: vertical;
+}
+
+select:disabled {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+/* Caixas que abrem/fecham (Enviar dúvida, Filtros) */
+.box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 16px;
+  margin-bottom: 12px;
+}
+
+.box summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.box[open] {
+  padding-bottom: 16px;
+}
+
+/* Texto com fórmulas: mantém as quebras de linha que o aluno escreveu */
+.math-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Fórmulas grandes deslizam para o lado em vez de alargar a página */
+.math-text .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+}
+
+.preview {
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.list-status {
+  color: var(--muted);
+  margin: 16px 0 8px;
+}
+
+.doubt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doubt-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.doubt-card.is-hidden {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.doubt-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 0.9rem;
+}
+
+.doubt-theme {
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.doubt-date {
+  color: var(--muted);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.badge-pending {
+  background: #fff4d6;
+  color: #7a5200;
+}
+
+.badge-answered {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.badge-hidden {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.answer {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--ok-text);
+  background: #f4faf6;
+  border-radius: 0 8px 8px 0;
+}
+
+.answer-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+  color: var(--ok-text);
+}
+
+.answer-date {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Botões da professora */
+.admin-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-small {
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: #fff;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn-small-primary {
+  color: #fff;
+  background: var(--primary);
+}
+
+/* ----- Painel da professora ----- */
+
+h3 {
+  font-size: 1.1rem;
+  margin: 0 0 8px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.panel .list-status {
+  margin-top: 0;
+}
+
+.person-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.person-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.person-email {
+  overflow-wrap: anywhere;
+}
+
+.person-date {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.person .btn-small {
+  flex: 0 0 auto;
+}
+
+input[type="file"] {
+  padding: 10px;
+  background: var(--bg);
+}
+
+.error-list {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--error-text);
+}
+
+.error-list li,
+.theme-new-list li {
+  margin-bottom: 4px;
+}
+
+.counts-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.count-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.count-number {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.count-item.is-empty .count-number {
+  color: var(--error-text);
+  font-weight: 600;
+}
+
+/* ----- Prática ----- */
+
+/* Texto só para leitores de ecrã (acessibilidade) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.summary {
+  margin: 16px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.question-statement {
+  margin: 10px 0 12px;
+  font-weight: 500;
+}
+
+.options {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Cada alternativa é um "botão" grande, fácil de tocar no celular */
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 48px;
+  margin: 0;
+  padding: 12px;
+  font-weight: 400;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.option:has(input:checked) {
+  border-color: var(--primary);
+  background: #eef2ff;
+}
+
+.option input {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  flex: 0 0 auto;
+  accent-color: var(--primary);
+}
+
+.option-letter {
+  font-weight: 700;
+}
+
+.option-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.option:has(input:disabled) {
+  cursor: default;
+}
+
+.option.is-correct {
+  border-color: var(--ok-text);
+  background: var(--ok-bg);
+}
+
+.option.is-wrong {
+  border-color: var(--error-text);
+  background: var(--error-bg);
+}
+
+.feedback {
+  margin-top: 14px;
+  padding: 12px;
+  border-left: 4px solid var(--ok-text);
+  border-radius: 0 8px 8px 0;
+  background: #f4faf6;
+}
+
+.feedback.is-wrong {
+  border-left-color: var(--error-text);
+  background: #fdf5f5;
+}
+
+.feedback-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: var(--ok-text);
+}
+
+.feedback.is-wrong .feedback-title {
+  color: var(--error-text);
+}
+
+.feedback-subtitle {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+#btn-practice-more {
+  margin-top: 16px;
+}
+
+#practice-redo {
+  margin-top: 16px;
+}
