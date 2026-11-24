@@ -679,3 +679,105 @@ input[type="file"] {
 #practice-redo {
   margin-top: 16px;
 }
+
+/* ----- Painel: desempenho dos alunos ----- */
+
+.progress-student {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.progress-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.progress-summary::-webkit-details-marker {
+  display: none;
+}
+
+.progress-summary::after {
+  content: "▸";
+  color: var(--muted);
+}
+
+.progress-student[open] > .progress-summary::after {
+  content: "▾";
+}
+
+.progress-score {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.progress-right {
+  color: var(--ok-text);
+}
+
+.progress-wrong {
+  color: var(--error-text);
+}
+
+.progress-none {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.progress-attempts {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-attempt {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 4px solid var(--ok-text);
+  background: var(--ok-bg);
+}
+
+.progress-attempt.is-wrong {
+  border-left-color: var(--error-text);
+  background: var(--error-bg);
+}
+
+.progress-attempt-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 0.85rem;
+}
+
+.progress-mark {
+  font-weight: 700;
+}
+
+.progress-theme {
+  color: var(--muted);
+}
+
+.progress-statement {
+  margin: 6px 0 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.progress-answer {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}

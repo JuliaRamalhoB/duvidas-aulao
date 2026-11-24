@@ -13,6 +13,7 @@ function openAdminPanel() {
   }
   setupAdminUi();
   loadPendingProfiles();
+  loadStudentProgress();
   loadQuestionCounts();
 }
 
@@ -23,6 +24,8 @@ function clearAdminPanel() {
   $("pending-list").textContent = "";
   $("pending-status").textContent = "";
   $("counts-list").textContent = "";
+  $("progress-list").textContent = "";
+  $("progress-status").textContent = "";
   $("csv-result").textContent = "";
   $("csv-file").value = "";
   $("btn-import").hidden = true;
@@ -36,6 +39,7 @@ function setupAdminUi() {
   $("btn-refresh-pending").addEventListener("click", loadPendingProfiles);
   $("btn-approve-all").addEventListener("click", approveAll);
   $("btn-refresh-counts").addEventListener("click", loadQuestionCounts);
+  $("btn-refresh-progress").addEventListener("click", loadStudentProgress);
   $("csv-file").addEventListener("change", handleCsvFile);
   $("btn-import").addEventListener("click", handleImport);
 }
@@ -120,6 +124,138 @@ async function approveAll() {
   }
   await approveProfiles(pendingProfiles.map((p) => p.id), $("btn-approve-all"));
   $("btn-approve-all").disabled = false;
+}
+
+// ---------------------------------------------------------------------
+// Desempenho de cada aluno (acertos e erros)
+// ---------------------------------------------------------------------
+// O Supabase devolve no máximo 1000 linhas por pedido, por isso as
+// tentativas são lidas em páginas.
+async function fetchAllAttempts() {
+  const pageSize = 1000;
+  const all = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabaseClient
+      .from("attempts")
+      .select("id, user_id, chosen, is_correct, created_at, questions(statement, correct, theme_id)")
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error) {
+      throw error;
+    }
+    all.push(...data);
+    if (data.length < pageSize) {
+      return all;
+    }
+  }
+}
+
+async function loadStudentProgress() {
+  const button = $("btn-refresh-progress");
+  button.disabled = true;
+  $("progress-status").textContent = "Carregando…";
+
+  try {
+    const [studentsResult, attempts] = await Promise.all([
+      supabaseClient
+        .from("profiles")
+        .select("id, display_name, email")
+        .eq("role", "student")
+        .eq("approved", true)
+        .order("display_name", { ascending: true }),
+      fetchAllAttempts(),
+      allThemes.length === 0 ? loadThemes() : null,
+    ]);
+    if (studentsResult.error) {
+      throw studentsResult.error;
+    }
+    renderStudentProgress(studentsResult.data, attempts);
+  } catch (error) {
+    console.error(error);
+    $("progress-status").textContent = "Não foi possível carregar o desempenho.";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderStudentProgress(students, attempts) {
+  const byStudent = new Map(students.map((s) => [s.id, []]));
+  for (const attempt of attempts) {
+    const list = byStudent.get(attempt.user_id);
+    if (list) {
+      list.push(attempt); // já vêm da mais recente para a mais antiga
+    }
+  }
+
+  const list = $("progress-list");
+  list.textContent = "";
+
+  for (const student of students) {
+    const own = byStudent.get(student.id);
+    const right = own.filter((a) => a.is_correct).length;
+    const wrong = own.length - right;
+
+    const item = makeEl("details", "progress-student");
+    const summary = makeEl("summary", "progress-summary");
+    const info = makeEl("div", "person-info");
+    info.append(
+      makeEl("strong", null, student.display_name),
+      makeEl("span", "person-email", student.email)
+    );
+    const score = makeEl("div", "progress-score");
+    if (own.length === 0) {
+      score.append(makeEl("span", "progress-none", "ainda não respondeu"));
+    } else {
+      score.append(
+        makeEl("span", "progress-right", "✓ " + right),
+        makeEl("span", "progress-wrong", "✗ " + wrong),
+        makeEl("span", "progress-pct", Math.round((right / own.length) * 100) + "%")
+      );
+    }
+    summary.append(info, score);
+    item.append(summary);
+
+    if (own.length > 0) {
+      const ul = makeEl("ul", "progress-attempts");
+      for (const attempt of own) {
+        ul.append(renderAttemptItem(attempt));
+      }
+      item.append(ul);
+    }
+    list.append(item);
+  }
+
+  const active = students.filter((s) => byStudent.get(s.id).length > 0).length;
+  $("progress-status").textContent =
+    students.length === 0
+      ? "Nenhum aluno aprovado ainda."
+      : active + " de " + students.length + (students.length === 1 ? " aluno" : " alunos") +
+        " já responderam questões.";
+}
+
+function renderAttemptItem(attempt) {
+  const li = makeEl("li", attempt.is_correct ? "progress-attempt is-right" : "progress-attempt is-wrong");
+  const question = attempt.questions;
+
+  const head = makeEl("div", "progress-attempt-head");
+  head.append(makeEl("span", "progress-mark", attempt.is_correct ? "Acertou" : "Errou"));
+  const theme = question ? findThemeById(question.theme_id) : null;
+  if (theme) {
+    head.append(makeEl("span", "progress-theme", themeLabel(theme)));
+  }
+  head.append(makeEl("span", "person-date", formatDateTime(attempt.created_at)));
+
+  const statement = makeEl("p", "progress-statement");
+  setMathText(statement, question ? question.statement : "(questão apagada)");
+
+  const answer = makeEl("p", "progress-answer",
+    attempt.is_correct || !question
+      ? "Marcou " + attempt.chosen
+      : "Marcou " + attempt.chosen + " · correta: " + question.correct);
+
+  li.append(head, statement, answer);
+  return li;
 }
 
 // ---------------------------------------------------------------------
